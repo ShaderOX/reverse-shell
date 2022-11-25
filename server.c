@@ -17,7 +17,7 @@
   }
 
 #define BACKLOG 16
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
 
 int s_socket;
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     ERROR_AND_EXIT("Couldn't bind socket.");
   }
 
-  printf("Created and binded socket.\n");
+  printf("Created and bound socket.\n");
 
   if ((listen(l_socket, BACKLOG)) < 0)
   {
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
       ERROR_AND_EXIT("Couldn't accept connection.");
     }
 
-    printf("Connected to %s\n", inet_ntoa(client_addr.sin_addr));
+    printf("Connected to %s\n\n", inet_ntoa(client_addr.sin_addr));
 
     char serverIp[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(socket_addr.sin_addr), serverIp, INET_ADDRSTRLEN);
@@ -86,6 +86,51 @@ int main(int argc, char *argv[])
       ERROR_AND_EXIT("Couldn't send data to client.");
     }
 
+    char *receive_buffer = calloc(BUFFER_SIZE, sizeof(char));
+    char *send_buffer = calloc(BUFFER_SIZE, sizeof(char));
+    FILE *outfp;
+
+    for (;;)
+    {
+      memset(receive_buffer, 0, BUFFER_SIZE);
+      int bytes_received = recv(r_socket, receive_buffer, BUFFER_SIZE, 0);
+      if (bytes_received < 0)
+      {
+        ERROR_AND_EXIT("Couldn't receive data from client.");
+      }
+      printf("Received `%s` command\n", receive_buffer);
+
+      printf("Executing command...\n");
+      outfp = popen(receive_buffer, "r");
+      if (outfp == NULL)
+      {
+        ERROR_AND_EXIT("Couldn't open pipe.");
+      }
+      printf("Dumping result to temporary file...\n");
+
+      printf("Reading temporary file...\n");
+      memset(send_buffer, 0, BUFFER_SIZE);
+      char c = 0;
+      for (size_t counter = 0;
+           counter < BUFFER_SIZE;
+           counter++)
+      {
+        if ((c = fgetc(outfp)) == EOF)
+        {
+          break;
+        }
+        send_buffer[counter] = c;
+      }
+
+      printf("Sending result to client...\n");
+      if (send(r_socket, send_buffer, BUFFER_SIZE, 0) < 0)
+      {
+        ERROR_AND_EXIT("Couldn't send data to client.");
+      }
+      printf("\n");
+    }
+
+    fclose(outfp);
     close(r_socket);
   }
 }

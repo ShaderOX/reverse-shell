@@ -38,10 +38,10 @@ int main(int argc, char *argv[])
     ERROR_AND_EXIT("Couldn't connect to server.");
   }
 
-  printf("Connected to server.\n");
+  printf("Connected to server.\n\n");
 
-  char *receive_buffer = calloc(BUFFER_SIZE, sizeof(char));
-  char *send_buffer = calloc(BUFFER_SIZE, sizeof(char));
+  char *receive_buffer = malloc(BUFFER_SIZE * sizeof(char));
+  char *send_buffer = malloc(BUFFER_SIZE * sizeof(char));
   char serverIp[INET_ADDRSTRLEN];
 
   // Get server ip and use it as prompt
@@ -51,9 +51,29 @@ int main(int argc, char *argv[])
   }
   strncpy(serverIp, receive_buffer, INET_ADDRSTRLEN);
 
-  printf("Server IP: %s\n", serverIp);
+  for (;;)
+  {
+    memset(send_buffer, 0, BUFFER_SIZE);
+    printf("%s $ ", serverIp);
+    fgets(send_buffer, BUFFER_SIZE, stdin);
+    send_buffer[strlen(send_buffer) - 1] = '\0';
+
+    if ((send(socket_fd, send_buffer, strlen(send_buffer), 0)) < 0)
+    {
+      ERROR_AND_EXIT("Couldn't send data to server.");
+    }
+
+    memset(receive_buffer, 0, BUFFER_SIZE);
+    if ((recv(socket_fd, receive_buffer, BUFFER_SIZE, 0)) < 0)
+    {
+      ERROR_AND_EXIT("Couldn't receive data from server.");
+    }
+    printf("%s\n", receive_buffer);
+  }
 
   close(socket_fd);
+  free(receive_buffer);
+  free(send_buffer);
 }
 
 void get_command_line_arguments(int argc, char *argv[], uint16_t *port)
