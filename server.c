@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
       outfp = popen(receive_buffer, "r");
       if (outfp == NULL)
       {
-        ERROR_AND_EXIT("Couldn't open pipe.");
+        ERROR_AND_EXIT("Couldn't open file.");
       }
       printf("Dumping result to temporary file...\n");
 
