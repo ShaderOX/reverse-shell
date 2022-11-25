@@ -58,3 +58,5 @@ data/
 test.c
 test/
 .DS_Store
+
+images/
