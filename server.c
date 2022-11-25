@@ -21,7 +21,7 @@
 
 int s_socket;
 
-void get_command_line_arguments(int argc, char *argv[], int *port);
+void get_command_line_arguments(int argc, char *argv[], uint16_t *port);
 void handle_sigint();
 
 int main(int argc, char *argv[])
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   // Taking SIGINT into account.
   signal(SIGINT, handle_sigint);
 
-  int port;
+  uint16_t port;
   get_command_line_arguments(argc, argv, &port);
 
   int l_socket;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
   }
 }
 
-void get_command_line_arguments(int argc, char *argv[], int *port)
+void get_command_line_arguments(int argc, char *argv[], uint16_t *port)
 {
   if (argc != 2)
   {
