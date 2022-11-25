@@ -132,6 +132,8 @@ int main(int argc, char *argv[])
 
     fclose(outfp);
     close(r_socket);
+    free(receive_buffer);
+    free(send_buffer);
   }
 }
 
